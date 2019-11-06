@@ -27,10 +27,11 @@ print (dataset)
 dataset.num_classes=2
 
 from torch_geometric.datasets import Planetoid 
-#dataset = Planetoid(root='/tmp/Cora', name='Cora')
-dataset = Planetoid(root='/tmp/Pubmed', name='Pubmed')
-#dataset = Planetoid(root='/tmp/Citeseer', name='Citeseer')
+#dataset = Planetoid(root='../data/Cora', name='Cora')
+dataset = Planetoid(root='../data/Pubmed', name='Pubmed')
+#dataset = Planetoid(root='../data/Citeseer', name='Citeseer')
 
+print (dataset[0])
 class GCNConv(torch.nn.Module):
 #class GCNConv(MessagePassing):
     def __init__(self, in_channels, out_channels, improved=False, cached=False,
@@ -118,8 +119,8 @@ class GCNConv(torch.nn.Module):
 class Net(torch.nn.Module): 
     def __init__(self): 
         super(Net, self).__init__() 
-        self.conv1 = GCNConv(dataset.num_node_features, 128) 
-        self.conv2 = GCNConv(128, dataset.num_classes) 
+        self.conv1 = GCNConv(dataset.num_node_features, 512) 
+        self.conv2 = GCNConv(512, dataset.num_classes) 
     
     def forward(self, data): 
         x, edge_index = data.x, data.edge_index
@@ -141,7 +142,6 @@ gcntime = 0
 losstime = 0
 lossbacktime = 0
 opttime  = 0
-
 
 for epoch in range(200): 
     optimizer.zero_grad() 
@@ -165,10 +165,10 @@ for epoch in range(200):
     t1 = time.time()
     opttime += t1-t0
    
-print gcntime
-print losstime
-print lossbacktime
-print opttime
+print (gcntime)
+print (losstime)
+print (lossbacktime)
+print (opttime)
 model.eval() 
 _, pred = model(data).max(dim=1) 
 correct = float (pred[data.test_mask].eq(
