@@ -56,16 +56,12 @@ def partition_dataset(batch_size):
             transforms.Normalize((0.1307, ), (0.3081, ))
         ]))
     size = distributed.get_world_size()
-    print (size)
-    bsz = 128 / float(size)
-    bsz = batch_size
     partition_sizes = [1.0 / size for _ in range(size)]
     partition = DataPartitioner(dataset, partition_sizes)
-    print (distributed.get_rank())
     partition = partition.use(distributed.get_rank())
     train_set = torch.utils.data.DataLoader(
-        partition, batch_size= (int) (bsz), shuffle=True)
-    return train_set, bsz
+        partition, batch_size= batch_size, shuffle=True)
+    return train_set
 
 class MNISTDataLoader(data.DataLoader):
     def __init__(self, root, batch_size, train=True):
@@ -211,17 +207,14 @@ class Net(nn.Module):
     def forward(self, x):
         return self.fc(x.view(x.size(0), -1))
 
-
-
-
-
 def run(args):
     device = torch.device('cuda' if torch.cuda.is_available() and not args.no_cuda else 'cpu')
-    train_set, bsz = partition_dataset(batch_size=args.batch_size)
+    train_set = partition_dataset(batch_size=args.batch_size)
     print ("train_set")
     print (len(train_set))
 
     model = Net()
+
     if distributed_is_initialized():
         model.to(device)
         model = nn.parallel.DistributedDataParallel(model)
